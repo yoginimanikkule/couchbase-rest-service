@@ -25,7 +25,7 @@ router.post("/submitTreatment", async (req, res) => {
       console.log("🟢 Retrieved Treatment Record:", JSON.stringify(result.content));
 
       // Update treatment status
-      const updatedData = { ...result.content, status: "submitted" };
+      const updatedData = { ...result.content, status: "submitted", treatmentStatus: "submitted" };
       await collection.upsert(id, updatedData);
       
       console.log(`✅ Treatment ${id} submitted successfully.`);
