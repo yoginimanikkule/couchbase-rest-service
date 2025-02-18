@@ -83,4 +83,70 @@ router.get("/count", async (req, res) => {
     }
 });
 
+router.post("/pullTreatmentTransfer", async (req, res) => {
+    console.log("➡️ [START] Processing pullTreatmentTransfer request...");
+
+    try {
+        const { bucket, scope } = await db;
+        if (!bucket) throw new Error("Couchbase bucket not found.");
+
+        const collection = scope.collection("PatientTreatment");
+        const { hospitalId, id, ownerId } = req.body;
+        if (!id || !ownerId) return res.status(400).json({ status: 400, error: "Missing required parameters." });
+
+        // Check document existence
+        const exists = await collection.exists(id);
+        if (!exists.exists) return res.status(404).json({ status: 404, error: "Treatment record not found." });
+
+        // Fetch treatment record
+        const result = await collection.get(id);
+        console.log("🟢 Retrieved Treatment Record:", JSON.stringify(result.content));
+
+        // Update ownerId
+        const updatedData = { ...result.content, ownerId };
+        await collection.upsert(id, updatedData);
+        
+        console.log(`✅ Treatment ${id} transferred to owner ${ownerId} successfully.`);
+        console.log("🟢 Updated Treatment Record:", JSON.stringify(updatedData));
+
+        return res.status(200).json({ status: 200, message: "Treatment transferred successfully.", data: updatedData });
+    } catch (error) {
+        console.error("❌ Error in pullTreatmentTransfer:", error.message);
+        return res.status(500).json({ status: 500, error: error.message });
+    }
+});
+
+router.post("/pushTreatmentTransfer", async (req, res) => {
+    console.log("➡️ [START] Processing pushTreatmentTransfer request...");
+
+    try {
+        const { bucket, scope } = await db;
+        if (!bucket) throw new Error("Couchbase bucket not found.");
+
+        const collection = scope.collection("PatientTreatment");
+        const { hospitalId, id } = req.body;
+        if (!id) return res.status(400).json({ status: 400, error: "Missing treatment ID." });
+
+        // Check document existence
+        const exists = await collection.exists(id);
+        if (!exists.exists) return res.status(404).json({ status: 404, error: "Treatment record not found." });
+
+        // Fetch treatment record
+        const result = await collection.get(id);
+        console.log("🟢 Retrieved Treatment Record:", JSON.stringify(result.content));
+
+        // Clear ownerId
+        const updatedData = { ...result.content, ownerId: "" };
+        await collection.upsert(id, updatedData);
+        
+        console.log(`✅ Treatment ${id} ownership cleared successfully.`);
+        console.log("🟢 Updated Treatment Record:", JSON.stringify(updatedData));
+
+        return res.status(200).json({ status: 200, message: "Treatment ownership cleared successfully.", data: updatedData });
+    } catch (error) {
+        console.error("❌ Error in pushTreatmentTransfer:", error.message);
+        return res.status(500).json({ status: 500, error: error.message });
+    }
+});
+
 module.exports = router;
