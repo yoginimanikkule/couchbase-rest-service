@@ -1,9 +1,9 @@
 const couchbase = require('couchbase');
 require('dotenv').config(); // Load environment variables
 
-const clusterConnStr = process.env.CB_HOST || "couchbases://cb.4lir3colxxt9cgtk.cloud.couchbase.com";
-const username = process.env.CB_USER || "backup@Admin1";
-const password = process.env.CB_PASSWORD || "Matrix@123";
+const clusterConnStr = process.env.CB_HOST || "couchbases://cb.bkgkcrighu-drfh0.cloud.couchbase.com";
+const username = process.env.CB_USER || "admin";
+const password = process.env.CB_PASSWORD || "Matrix@1234";
 const bucketName = process.env.CB_BUCKET || "pathtest";
 const scopeName = process.env.CB_SCOPE || "_default";
 
